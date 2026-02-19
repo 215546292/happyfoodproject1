@@ -1,0 +1,57 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}My Orders - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>My Orders</h1>
+    
+    {% if orders %}
+    <div class="orders-list">
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3>Order #{{ order.order_number }}</h3>
+                    <p class="order-date">Placed on {{ order.created_at|date:"F d, Y" }}</p>
+                </div>
+                <div class="order-status">
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+            </div>
+            
+            <div class="order-items-preview">
+                {% for item in order.items.all|slice:":3" %}
+                <div class="order-item-preview">
+                    <span>{{ item.quantity }}x {{ item.product_name }}</span>
+                    <span>R{{ item.subtotal }}</span>
+                </div>
+                {% endfor %}
+                {% if order.items.count > 3 %}
+                    <p class="more-items">+ {{ order.items.count|add:"-3" }} more item(s)</p>
+                {% endif %}
+            </div>
+            
+            <div class="order-footer">
+                <div class="order-total">
+                    <strong>Total: R{{ order.total }}</strong>
+                </div>
+                <a href="{% url 'ecomapp:order_detail' order.order_number %}" class="btn btn-primary">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-orders">
+        <i class="fas fa-shopping-bag"></i>
+        <h2>No orders yet</h2>
+        <p>Start shopping to see your orders here.</p>
+        <a href="{% url 'ecomapp:product_list' %}" class="btn btn-primary">Browse Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

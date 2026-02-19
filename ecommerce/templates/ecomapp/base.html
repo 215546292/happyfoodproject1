@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Auto Spares Store{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="{% url 'ecomapp:home' %}">
+                    <i class="fas fa-car"></i> Happy food delivery
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="{% url 'ecomapp:home' %}">Home</a>
+                <a href="{% url 'ecomapp:product_list' %}">Products</a>
+                {% if user.is_authenticated %}
+                    <span class="user-name">
+                        <i class="fas fa-user"></i> 
+                        {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+                    </span>
+                    <a href="{% url 'ecomapp:order_list' %}">My Orders</a>
+                    <a href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                {% endif %}
+                <a href="{% url 'ecomapp:cart' %}" class="cart-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">{{ cart_count|default:0 }}</span>
+                </a>
+            </div>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <button onclick="this.parentElement.remove()">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Happy food</h3>
+                    <p>Your trusted source for food delivery</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'ecomapp:home' %}">Home</a></li>
+                        <li><a href="{% url 'ecomapp:product_list' %}">Products</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'ecomapp:order_list' %}">My Orders</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@autospares.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 happy food Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

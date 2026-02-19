@@ -1,0 +1,148 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}{% if category %}{{ category.name }}{% else %}Products{% endif %} - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="product-list-page">
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+            <h3>Filters</h3>
+            
+            <!-- Search -->
+            <form method="get" class="filter-form">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search products...">
+                </div>
+                
+                <!-- Make Filter -->
+                {% if makes %}
+                <div class="filter-group">
+                    <label>Car Make</label>
+                    <select name="make">
+                        <option value="">All Makes</option>
+                        {% for make in makes %}
+                            <option value="{{ make }}" {% if selected_make == make %}selected{% endif %}>{{ make }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <!-- Condition Filter -->
+                <div class="filter-group">
+                    <label>Condition</label>
+                    <select name="condition">
+                        <option value="">All Conditions</option>
+                        <option value="new" {% if selected_condition == 'new' %}selected{% endif %}>New</option>
+                        <option value="used" {% if selected_condition == 'used' %}selected{% endif %}>Used</option>
+                        <option value="refurbished" {% if selected_condition == 'refurbished' %}selected{% endif %}>Refurbished</option>
+                    </select>
+                </div>
+                
+                <!-- Price Range -->
+                <div class="filter-group">
+                    <label>Price Range</label>
+                    <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min R" step="0.01">
+                    <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max R" step="0.01">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'ecomapp:product_list' %}" class="btn btn-secondary">Clear</a>
+            </form>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="products-main">
+            <div class="products-header">
+                <h1>{% if category %}{{ category.name }}{% else %}All Products{% endif %}</h1>
+                
+                <!-- Sort -->
+                <form method="get" class="sort-form">
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'sort' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    <select name="sort" onchange="this.form.submit()">
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest</option>
+                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name: A-Z</option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- Products Grid -->
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <a href="{% url 'ecomapp:product_detail' product.slug %}">
+                        <div class="product-card-image-wrapper">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            {% elif product.product_images.first %}
+                                <img src="{{ product.product_images.first.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="product-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <h3>{{ product.name }}</h3>
+                            {% if product.make %}
+                                <p class="product-meta">{{ product.make }}{% if product.model %} {{ product.model }}{% endif %}</p>
+                            {% endif %}
+                            <div class="product-price">
+                                <span class="price">R{{ product.price }}</span>
+                                {% if product.compare_at_price %}
+                                    <span class="compare-price">R{{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    <div class="product-card-actions">
+                        {% if product.in_stock %}
+                            <form method="post" action="{% url 'ecomapp:add_to_cart' product.id %}" class="add-to-cart-form-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="out-of-stock">Out of Stock</span>
+                            <button class="btn btn-disabled btn-sm" disabled>
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div class="pagination">
+                {% if products.has_previous %}
+                    <a href="?page={{ products.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Previous</a>
+                {% endif %}
+                <span>Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
+                {% if products.has_next %}
+                    <a href="?page={{ products.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Next</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="no-products">
+                <p>No products found. Try adjusting your filters.</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Auto Spares Ecommerce Store
 
 A comprehensive ecommerce platform for auto spare parts built with Django and PostgreSQL.
@@ -173,3 +174,7 @@ Static files are collected to `staticfiles/` directory in production.
 
 This project is open source and available for modification and distribution.
 
+=======
+# happyfoodproject1
+is the first project
+>>>>>>> fba87c3a8e94175d0e09ac1c991f31d971d62a9d
