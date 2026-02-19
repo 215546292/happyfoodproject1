@@ -1,0 +1,100 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmation - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="order-confirmation">
+        <div class="confirmation-header">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h1>Order Confirmed!</h1>
+            <p>Thank you for your purchase. Your order has been received and is being processed.</p>
+        </div>
+
+        <div class="order-details-card">
+            <h2>Order Details</h2>
+            
+            <div class="detail-row">
+                <span class="label">Order Number:</span>
+                <span class="value">{{ order.order_number }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Order Date:</span>
+                <span class="value">{{ order.created_at|date:"F d, Y H:i" }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Status:</span>
+                <span class="value status-{{ order.status }}">{{ order.get_status_display }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Payment Status:</span>
+                <span class="value">{{ order.get_payment_status_display }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="label">Total Amount:</span>
+                <span class="value total-amount">R{{ order.total }}</span>
+            </div>
+
+            <h3>Shipping Address</h3>
+            <div class="shipping-address">
+                <p>{{ order.customer_name }}</p>
+                <p>{{ order.shipping_address_line_1 }}</p>
+                {% if order.shipping_address_line_2 %}
+                    <p>{{ order.shipping_address_line_2 }}</p>
+                {% endif %}
+                <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}</p>
+                <p>{{ order.shipping_country }}</p>
+            </div>
+
+            <h3>Order Items</h3>
+            <div class="order-items-list">
+                {% for item in order.items.all %}
+                <div class="order-item-row">
+                    <div class="item-info">
+                        <h4>{{ item.product_name }}</h4>
+                        <p>Qty: {{ item.quantity }}</p>
+                    </div>
+                    <div class="item-price">
+                        R{{ item.subtotal }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="order-totals-breakdown">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>R{{ order.subtotal }}</span>
+                </div>
+                <div class="total-row">
+                    <span>Tax:</span>
+                    <span>R{{ order.tax }}</span>
+                </div>
+                <div class="total-row">
+                    <span>Shipping:</span>
+                    <span>R{{ order.shipping_cost }}</span>
+                </div>
+                <div class="total-row final">
+                    <span>Total:</span>
+                    <span>R{{ order.total }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'ecomapp:order_detail' order.order_number %}" class="btn btn-primary">
+                View Order Details
+            </a>
+            <a href="{% url 'ecomapp:home' %}" class="btn btn-secondary">
+                Continue Shopping
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

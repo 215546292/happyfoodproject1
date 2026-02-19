@@ -1,0 +1,124 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Checkout</h1>
+    
+    <div class="checkout-page">
+        <form method="post" class="checkout-form">
+            {% csrf_token %}
+            
+            <div class="checkout-content">
+                <!-- Shipping Information -->
+                <div class="checkout-section">
+                    <h2>Shipping Information</h2>
+                    
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="customer_name" value="{% if profile %}{{ profile.user.get_full_name }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="customer_email" value="{{ user.email }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="tel" name="phone" value="{% if profile %}{{ profile.phone }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Address Line 1 *</label>
+                        <input type="text" name="address_line_1" value="{% if profile %}{{ profile.address_line_1 }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Address Line 2</label>
+                        <input type="text" name="address_line_2" value="{% if profile %}{{ profile.address_line_2 }}{% endif %}">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" name="city" value="{% if profile %}{{ profile.city }}{% endif %}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>State *</label>
+                            <input type="text" name="state" value="{% if profile %}{{ profile.state }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Postal Code *</label>
+                            <input type="text" name="postal_code" value="{% if profile %}{{ profile.postal_code }}{% endif %}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Country *</label>
+                            <input type="text" name="country" value="{% if profile %}{{ profile.country }}{% else %}USA{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Order Notes</label>
+                        <textarea name="notes" rows="3" placeholder="Special instructions for your order..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="checkout-summary">
+                    <h2>Order Summary</h2>
+                    
+                    <div class="order-items">
+                        {% for item in cart_items %}
+                        <div class="order-item">
+                            <div class="item-info">
+                                <h4>{{ item.product.name }}</h4>
+                                <p>Qty: {{ item.quantity }} × R{{ item.product.price }}</p>
+                            </div>
+                            <div class="item-subtotal">
+                                R{{ item.get_subtotal }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>R{{ cart.get_total }}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax (10%):</span>
+                            <span>R{{ cart.get_tax|floatformat:2 }}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Shipping:</span>
+                            <span>R{{ cart.get_shipping_cost|floatformat:2 }}</span>
+                        </div>
+                        <div class="total-row final-total">
+                            <span>Total:</span>
+                            <span>R{{ cart.get_final_total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large btn-block">
+                        Place Order
+                    </button>
+                    
+                    <a href="{% url 'ecomapp:cart' %}" class="btn btn-secondary btn-block">
+                        Back to Cart
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

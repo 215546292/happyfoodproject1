@@ -1,0 +1,55 @@
+/* Modern dashboard styles */
+#side-nav {
+    height: 100vh;
+    background: #fff;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.menu-scroll {
+    overflow-y: auto;
+    height: calc(100vh - 200px); /* Adjust based on header/footer height */
+}
+
+.top-side-bg {
+    background-image: url("../img/WHITE.PNG");
+    position: relative;
+}
+
+/* Modern hover effects */
+.main-menu ul li a {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.main-menu ul li a:hover {
+    background: rgba(0,0,0,0.05);
+    border-left-color: #007bff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #side-nav {
+        position: fixed;
+        left: -250px;
+        z-index: 1000;
+    }
+    
+    #side-nav.active {
+        left: 0;
+    }
+}
+
+/* Modern scrollbar */
+.menu-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.menu-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.menu-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+} 

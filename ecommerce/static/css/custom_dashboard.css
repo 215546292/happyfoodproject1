@@ -1,0 +1,398 @@
+/* static/css/custom_dashboard.css */
+
+:root {
+    --primary-red: #dc3545;
+    --secondary-green: #28a745;
+    --accent-yellow: #ffc107;
+    --light-red: #ff4d5e;
+    --dark-red: #c82333;
+}
+
+/* Main Dashboard Container */
+.dashboard-container {
+    background-color: #f8f9fa;
+}
+
+/* Cards */
+.card {
+    border-color: var(--primary-red);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+}
+
+.card-header {
+    background-color: var(--primary-red);
+    color: white;
+}
+
+/* Stats Cards */
+.stats-card {
+    border-left: 4px solid var(--primary-red);
+}
+
+.stats-card.success {
+    border-left-color: var(--secondary-green);
+}
+
+.stats-card.warning {
+    border-left-color: var(--accent-yellow);
+}
+
+/* Navigation */
+.nav-link.active {
+    background-color: var(--primary-red) !important;
+    color: white !important;
+}
+
+.nav-link:hover {
+    background-color: var(--light-red);
+    color: white;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-red);
+    border-color: var(--dark-red);
+}
+
+/* Modern Button Styles */
+.btn-modern {
+    position: relative;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.btn-modern:hover::before {
+    transform: translateX(100%);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-modern:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.btn-modern:hover .btn-icon {
+    transform: scale(1.1);
+}
+
+.btn-text {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+}
+
+.btn-modern:active .btn-ripple {
+    width: 300px;
+    height: 300px;
+}
+
+/* Edit Button */
+.btn-edit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    color: white;
+}
+
+.btn-edit:active {
+    background: linear-gradient(135deg, #4e5fc6 0%, #5f377e 100%);
+}
+
+/* Delete Button */
+.btn-delete {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #e53935 100%);
+    color: white;
+}
+
+.btn-delete:active {
+    background: linear-gradient(135deg, #ff1744 0%, #d32f2f 100%);
+}
+
+/* Close Button */
+.btn-close {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.btn-close:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+    color: white;
+}
+
+.btn-close:active {
+    background: linear-gradient(135deg, #495057 0%, #212529 100%);
+}
+
+/* Button Group Spacing */
+.modal-footer .btn-modern {
+    margin: 0 8px;
+    flex: 0 0 auto;
+}
+
+.modal-footer .btn-modern:first-child {
+    margin-left: 0;
+}
+
+.modal-footer .btn-modern:last-child {
+    margin-right: 0;
+}
+
+/* Modal footer layout improvements */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Button size variations */
+.btn-modern.btn-sm {
+    padding: 8px 16px;
+    min-height: 36px;
+    font-size: 12px;
+}
+
+.btn-modern.btn-lg {
+    padding: 16px 32px;
+    min-height: 56px;
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .btn-modern {
+        padding: 10px 20px;
+        min-height: 44px;
+        font-size: 13px;
+    }
+
+    .btn-text {
+        display: none;
+    }
+
+    .btn-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .modal-footer .btn-modern {
+        margin: 0 4px;
+    }
+}
+
+/* Animation for button appearance */
+@keyframes buttonSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-footer .btn-modern {
+    animation: buttonSlideIn 0.4s ease-out;
+}
+
+.modal-footer .btn-modern:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.modal-footer .btn-modern:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.modal-footer .btn-modern:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* Focus states for accessibility */
+.btn-modern:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Loading states */
+.btn-modern.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-modern.loading .btn-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success states */
+.btn-modern.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-modern.success:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+}
+
+/* Error states */
+.btn-modern.error {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.btn-modern.error:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+}
+
+/* Disabled states */
+.btn-modern:disabled,
+.btn-modern.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-modern {
+        border: 2px solid currentColor;
+    }
+
+    .btn-edit {
+        background: #667eea;
+    }
+
+    .btn-delete {
+        background: #ff6b6b;
+    }
+
+    .btn-close {
+        background: #6c757d;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+    .btn-modern,
+    .btn-modern:hover,
+    .btn-modern:active,
+    .btn-modern .btn-icon,
+    .btn-ripple {
+        transition: none;
+        animation: none;
+    }
+
+    .btn-modern:hover {
+        transform: none;
+    }
+}
+
+/* Tables */
+.table-header {
+    background-color: var(--primary-red);
+    color: white;
+}
+
+/* Charts and Graphs */
+.chart-container {
+    border: 1px solid var(--primary-red);
+    border-radius: 4px;
+    padding: 15px;
+}
