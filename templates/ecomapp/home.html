@@ -1,0 +1,149 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Home - Auto Spares Store{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>happy foods</h1>
+            <p>Find the perfect food store</p>
+            <a href="{% url 'ecomapp:product_list' %}" class="btn btn-primary">Shop Now</a>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <a href="{% url 'ecomapp:product_list_by_category' category.slug %}">
+                    <div class="category-placeholder">
+                        {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 40px; height: 40px; object-fit: contain;">
+                        {% else %}
+                            <i class="fas fa-cog"></i>
+                        {% endif %}
+                    </div>
+                    <h3>{{ category.name }}</h3>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="featured-products">
+    <div class="container">
+        <h2 class="section-title">Featured Products</h2>
+        <div class="products-grid">
+            {% for product in featured_products %}
+            <div class="product-card">
+                <a href="{% url 'ecomapp:product_detail' product.slug %}">
+                    <div class="product-card-image-wrapper">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% elif product.product_images.first %}
+                            <img src="{{ product.product_images.first.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="product-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <div class="product-price">
+                            <span class="price">R{{ product.price }}</span>
+                            {% if product.compare_at_price %}
+                                <span class="compare-price">R{{ product.compare_at_price }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                <div class="product-card-actions">
+                    {% if product.in_stock %}
+                        <form method="post" action="{% url 'ecomapp:add_to_cart' product.id %}" class="add-to-cart-form-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="out-of-stock">Out of Stock</span>
+                        <button class="btn btn-disabled btn-sm" disabled>
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Latest Products -->
+{% if latest_products %}
+<section class="latest-products">
+    <div class="container">
+        <h2 class="section-title">Latest Arrivals</h2>
+        <div class="products-grid">
+            {% for product in latest_products %}
+            <div class="product-card">
+                <a href="{% url 'ecomapp:product_detail' product.slug %}">
+                    <div class="product-card-image-wrapper">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% elif product.product_images.first %}
+                            <img src="{{ product.product_images.first.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="product-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <div class="product-price">
+                            <span class="price">R{{ product.price }}</span>
+                            {% if product.compare_at_price %}
+                                <span class="compare-price">R{{ product.compare_at_price }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                <div class="product-card-actions">
+                    {% if product.in_stock %}
+                        <form method="post" action="{% url 'ecomapp:add_to_cart' product.id %}" class="add-to-cart-form-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="out-of-stock">Out of Stock</span>
+                        <button class="btn btn-disabled btn-sm" disabled>
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+

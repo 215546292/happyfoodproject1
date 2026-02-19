@@ -1,0 +1,738 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Store Admin Dashboard - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; margin: 40px auto; padding: 20px;">
+    <div style="background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+            <h1 style="margin: 0; color: #333;">
+                <i class="fas fa-store"></i> Store Admin Dashboard
+            </h1>
+            <a href="{% url 'add_product' %}" class="btn btn-primary" style="text-decoration: none;">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
+        </div>
+
+        <!-- Search and Filter -->
+        <div style="margin-bottom: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+            <form method="get" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 5px; color: #555; font-weight: 500;">Search</label>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ search_query }}"
+                        placeholder="Search products..."
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"
+                    >
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 5px; color: #555; font-weight: 500;">Category</label>
+                    <select 
+                        name="category" 
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"
+                    >
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a href="{% url 'store_admin_dashboard' %}" class="btn btn-secondary" style="padding: 10px 20px; text-decoration: none;">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bulk Actions Section -->
+        <div id="bulkActionsSection" style="display: none; margin-bottom: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <span id="selectedCount" style="font-weight: 600; color: #856404;"></span>
+                <button 
+                    type="button" 
+                    id="bulkDeleteBtn" 
+                    class="btn btn-danger"
+                    style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+                >
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
+                <button 
+                    type="button" 
+                    id="clearSelectionBtn" 
+                    class="btn btn-secondary"
+                    style="background: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+                >
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div style="overflow-x: auto;">
+            {% if products %}
+            <table style="width: 100%; border-collapse: collapse; background: #f9f9f9;">
+                <thead>
+                    <tr style="background: #333; color: white;">
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 50px;">
+                            <input 
+                                type="checkbox" 
+                                id="selectAllCheckbox" 
+                                style="cursor: pointer; width: 18px; height: 18px;"
+                                title="Select All"
+                            >
+                        </th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Image</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Product Name</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Category</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Price</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Stock</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Status</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                            <input 
+                                type="checkbox" 
+                                class="product-checkbox" 
+                                value="{{ product.id }}"
+                                style="cursor: pointer; width: 18px; height: 18px;"
+                            >
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">
+                            {% with primary_image_url=product.get_primary_image total_images=product.get_total_image_count %}
+                                {% if primary_image_url and primary_image_url != '/static/img/default.png' %}
+                                    <div style="position: relative;">
+                                        <img src="{{ primary_image_url }}" alt="{{ product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                        {% if total_images > 1 %}
+                                            <span style="position: absolute; top: -5px; right: -5px; background: #007bff; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid white;">
+                                                {{ total_images }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 4px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; text-align: center;">
+                                        No Image
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">{{ product.name }}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">{{ product.category.name }}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">R{{ product.price }}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">{{ product.stock_quantity }}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">
+                            {% if product.is_active %}
+                            <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                Active
+                            </span>
+                            {% else %}
+                            <span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd;">
+                            <button 
+                                class="btn btn-sm btn-primary edit-product-btn"
+                                style="padding: 6px 12px; font-size: 12px;"
+                                data-product-id="{{ product.id }}"
+                                data-product-name="{{ product.name|escapejs }}"
+                                data-category-id="{{ product.category.id }}"
+                                data-price="{{ product.price }}"
+                                data-stock="{{ product.stock_quantity }}"
+                                data-is-active="{{ product.is_active|yesno:"true,false" }}"
+                                data-image-url="{{ product.get_primary_image }}"
+                                data-item-image-1-url="{% if product.item_image_1 %}{{ product.item_image_1.url }}{% endif %}"
+                                data-item-image-2-url="{% if product.item_image_2 %}{{ product.item_image_2.url }}{% endif %}"
+                            >
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                {% if products.has_previous %}
+                <a href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}" 
+                   class="btn btn-secondary" style="text-decoration: none; margin: 0 5px;">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+                {% endif %}
+                
+                <span style="padding: 10px 15px; margin: 0 5px;">
+                    Page {{ products.number }} of {{ products.paginator.num_pages }}
+                </span>
+                
+                {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}" 
+                   class="btn btn-secondary" style="text-decoration: none; margin: 0 5px;">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;">
+                <i class="fas fa-box-open" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                <p style="color: #666; font-size: 16px;">No products found.</p>
+                <a href="{% url 'add_product' %}" class="btn btn-primary" style="text-decoration: none; margin-top: 20px; display: inline-block;">
+                    Add First Product
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
+            <a href="{% url 'ecomapp:home' %}" style="color: #666; text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h2 style="margin-top: 0; margin-bottom: 20px;">
+            <i class="fas fa-edit"></i> Edit Product: <span id="productNameDisplay"></span>
+        </h2>
+        <form method="post" action="" id="editForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Image Upload -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Product Image</label>
+                <div id="currentImageContainer" style="margin-bottom: 10px;">
+                    <img id="currentImagePreview" src="" alt="Current image" style="max-width: 150px; max-height: 150px; border-radius: 4px; border: 1px solid #ddd; display: none;">
+                    <div id="noImageText" style="padding: 20px; background: #f0f0f0; border-radius: 4px; text-align: center; color: #999;">
+                        No Image
+                    </div>
+                </div>
+                <input 
+                    type="file" 
+                    id="editImage" 
+                    name="image" 
+                    accept="image/*"
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                    onchange="previewImage(this)"
+                >
+                <small style="color: #666; display: block; margin-top: 5px;">Leave empty to keep current image</small>
+            </div>
+
+            <!-- Item Images Section (Optional) -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                    <i class="fas fa-image"></i> Item Images <span style="color: #6c757d; font-weight: normal; font-size: 13px;">(Optional)</span>
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <!-- Item Image 1 -->
+                    <div style="border: 2px dashed #ddd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
+                        <label for="editItemImage1" style="display: block; margin-bottom: 8px; color: #555; font-size: 13px; font-weight: 500;">
+                            Item Image 1 (Optional)
+                        </label>
+                        <div id="itemImage1Container" style="margin-bottom: 10px;">
+                            <img id="currentItemImage1Preview" src="" alt="Item image 1" style="max-width: 100%; max-height: 150px; border-radius: 4px; border: 1px solid #ddd; display: none;">
+                            <div id="noItemImage1Text" style="padding: 20px; background: #f0f0f0; border-radius: 4px; text-align: center; color: #999; font-size: 12px;">
+                                No Image
+                            </div>
+                        </div>
+                        <input 
+                            type="file" 
+                            id="editItemImage1" 
+                            name="item_image_1" 
+                            accept="image/*"
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; margin-bottom: 5px;"
+                            onchange="previewItemImage(this, 1)"
+                        >
+                        <input type="hidden" id="removeItemImage1" name="remove_item_image_1" value="false">
+                        <button 
+                            type="button" 
+                            id="removeItemImage1Btn" 
+                            onclick="removeItemImage(1)"
+                            style="width: 100%; padding: 6px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; display: none;"
+                        >
+                            <i class="fas fa-trash"></i> Remove Image
+                        </button>
+                    </div>
+                    
+                    <!-- Item Image 2 -->
+                    <div style="border: 2px dashed #ddd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
+                        <label for="editItemImage2" style="display: block; margin-bottom: 8px; color: #555; font-size: 13px; font-weight: 500;">
+                            Item Image 2 (Optional)
+                        </label>
+                        <div id="itemImage2Container" style="margin-bottom: 10px;">
+                            <img id="currentItemImage2Preview" src="" alt="Item image 2" style="max-width: 100%; max-height: 150px; border-radius: 4px; border: 1px solid #ddd; display: none;">
+                            <div id="noItemImage2Text" style="padding: 20px; background: #f0f0f0; border-radius: 4px; text-align: center; color: #999; font-size: 12px;">
+                                No Image
+                            </div>
+                        </div>
+                        <input 
+                            type="file" 
+                            id="editItemImage2" 
+                            name="item_image_2" 
+                            accept="image/*"
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; margin-bottom: 5px;"
+                            onchange="previewItemImage(this, 2)"
+                        >
+                        <input type="hidden" id="removeItemImage2" name="remove_item_image_2" value="false">
+                        <button 
+                            type="button" 
+                            id="removeItemImage2Btn" 
+                            onclick="removeItemImage(2)"
+                            style="width: 100%; padding: 6px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; display: none;"
+                        >
+                            <i class="fas fa-trash"></i> Remove Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Name -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Product Name *</label>
+                <input 
+                    type="text" 
+                    id="editProductName" 
+                    name="name" 
+                    required
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                >
+            </div>
+
+            <!-- Category -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Category *</label>
+                <select 
+                    id="editCategory" 
+                    name="category" 
+                    required
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                >
+                    <option value="">Select Category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Price -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Price (R) *</label>
+                <input 
+                    type="number" 
+                    id="editPrice" 
+                    name="price" 
+                    step="0.01" 
+                    min="0.01"
+                    required
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                >
+            </div>
+
+            <!-- Stock Quantity -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Stock Quantity *</label>
+                <input 
+                    type="number" 
+                    id="editStock" 
+                    name="stock_quantity" 
+                    min="0"
+                    required
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                >
+            </div>
+
+            <!-- Status -->
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Status *</label>
+                <select 
+                    id="editStatus" 
+                    name="is_active" 
+                    required
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"
+                >
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" onclick="closeModal()" class="btn btn-secondary" style="flex: 1;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+</style>
+
+<script>
+// Add event listeners to all edit buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.edit-product-btn');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const productName = this.getAttribute('data-product-name');
+            const categoryId = this.getAttribute('data-category-id');
+            const price = this.getAttribute('data-price');
+            const stock = this.getAttribute('data-stock');
+            const isActive = this.getAttribute('data-is-active') === 'true';
+            const imageUrl = this.getAttribute('data-image-url') || '';
+            const itemImage1Url = this.getAttribute('data-item-image-1-url') || '';
+            const itemImage2Url = this.getAttribute('data-item-image-2-url') || '';
+            
+            editProduct(productId, productName, categoryId, price, stock, isActive, imageUrl, itemImage1Url, itemImage2Url);
+        });
+    });
+});
+
+function editProduct(productId, productName, categoryId, price, stock, isActive, imageUrl, itemImage1Url, itemImage2Url) {
+    // Set form action
+    const editUrl = "{% url 'edit_product' 0 %}".replace('0', productId);
+    document.getElementById('editForm').action = editUrl;
+    
+    // Populate form fields
+    document.getElementById('productNameDisplay').textContent = productName;
+    document.getElementById('editProductName').value = productName;
+    document.getElementById('editCategory').value = categoryId;
+    document.getElementById('editPrice').value = price;
+    document.getElementById('editStock').value = stock;
+    document.getElementById('editStatus').value = isActive ? 'true' : 'false';
+    
+    // Handle main image preview
+    const imagePreview = document.getElementById('currentImagePreview');
+    const noImageText = document.getElementById('noImageText');
+    
+    if (imageUrl && imageUrl.trim() !== '' && imageUrl !== '/static/img/default.png') {
+        imagePreview.src = imageUrl;
+        imagePreview.style.display = 'block';
+        noImageText.style.display = 'none';
+    } else {
+        imagePreview.style.display = 'none';
+        noImageText.style.display = 'block';
+    }
+    
+    // Handle item image 1 preview
+    const itemImage1Preview = document.getElementById('currentItemImage1Preview');
+    const noItemImage1Text = document.getElementById('noItemImage1Text');
+    const removeItemImage1Btn = document.getElementById('removeItemImage1Btn');
+    const removeItemImage1Input = document.getElementById('removeItemImage1');
+    
+    if (itemImage1Url && itemImage1Url.trim() !== '') {
+        itemImage1Preview.src = itemImage1Url;
+        itemImage1Preview.style.display = 'block';
+        noItemImage1Text.style.display = 'none';
+        removeItemImage1Btn.style.display = 'block';
+        removeItemImage1Input.value = 'false';
+    } else {
+        itemImage1Preview.style.display = 'none';
+        noItemImage1Text.style.display = 'block';
+        removeItemImage1Btn.style.display = 'none';
+        removeItemImage1Input.value = 'false';
+    }
+    
+    // Handle item image 2 preview
+    const itemImage2Preview = document.getElementById('currentItemImage2Preview');
+    const noItemImage2Text = document.getElementById('noItemImage2Text');
+    const removeItemImage2Btn = document.getElementById('removeItemImage2Btn');
+    const removeItemImage2Input = document.getElementById('removeItemImage2');
+    
+    if (itemImage2Url && itemImage2Url.trim() !== '') {
+        itemImage2Preview.src = itemImage2Url;
+        itemImage2Preview.style.display = 'block';
+        noItemImage2Text.style.display = 'none';
+        removeItemImage2Btn.style.display = 'block';
+        removeItemImage2Input.value = 'false';
+    } else {
+        itemImage2Preview.style.display = 'none';
+        noItemImage2Text.style.display = 'block';
+        removeItemImage2Btn.style.display = 'none';
+        removeItemImage2Input.value = 'false';
+    }
+    
+    // Reset file inputs
+    document.getElementById('editImage').value = '';
+    document.getElementById('editItemImage1').value = '';
+    document.getElementById('editItemImage2').value = '';
+    
+    // Show modal
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imagePreview = document.getElementById('currentImagePreview');
+            const noImageText = document.getElementById('noImageText');
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+            noImageText.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewItemImage(input, imageNumber) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imagePreview = document.getElementById(`currentItemImage${imageNumber}Preview`);
+            const noImageText = document.getElementById(`noItemImage${imageNumber}Text`);
+            const removeBtn = document.getElementById(`removeItemImage${imageNumber}Btn`);
+            const removeInput = document.getElementById(`removeItemImage${imageNumber}`);
+            
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+            noImageText.style.display = 'none';
+            removeBtn.style.display = 'block';
+            removeInput.value = 'false'; // Reset remove flag when new image is selected
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeItemImage(imageNumber) {
+    const imagePreview = document.getElementById(`currentItemImage${imageNumber}Preview`);
+    const noImageText = document.getElementById(`noItemImage${imageNumber}Text`);
+    const removeBtn = document.getElementById(`removeItemImage${imageNumber}Btn`);
+    const removeInput = document.getElementById(`removeItemImage${imageNumber}`);
+    const fileInput = document.getElementById(`editItemImage${imageNumber}`);
+    
+    // Hide preview and show "No Image"
+    imagePreview.style.display = 'none';
+    noImageText.style.display = 'block';
+    removeBtn.style.display = 'none';
+    
+    // Set remove flag
+    removeInput.value = 'true';
+    
+    // Clear file input
+    if (fileInput) {
+        fileInput.value = '';
+    }
+}
+
+function closeModal() {
+    document.getElementById('editModal').style.display = 'none';
+    // Reset form
+    document.getElementById('editForm').reset();
+    document.getElementById('currentImagePreview').style.display = 'none';
+    document.getElementById('noImageText').style.display = 'block';
+    document.getElementById('currentItemImage1Preview').style.display = 'none';
+    document.getElementById('noItemImage1Text').style.display = 'block';
+    document.getElementById('removeItemImage1Btn').style.display = 'none';
+    document.getElementById('removeItemImage1').value = 'false';
+    document.getElementById('currentItemImage2Preview').style.display = 'none';
+    document.getElementById('noItemImage2Text').style.display = 'block';
+    document.getElementById('removeItemImage2Btn').style.display = 'none';
+    document.getElementById('removeItemImage2').value = 'false';
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Bulk Selection and Deletion Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const productCheckboxes = document.querySelectorAll('.product-checkbox');
+    const bulkActionsSection = document.getElementById('bulkActionsSection');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+
+    // Update selected count and show/hide bulk actions
+    function updateSelectionUI() {
+        const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+        const count = selectedCheckboxes.length;
+        
+        if (count > 0) {
+            bulkActionsSection.style.display = 'block';
+            selectedCountSpan.textContent = count + ' product(s) selected';
+        } else {
+            bulkActionsSection.style.display = 'none';
+        }
+        
+        // Update select all checkbox state
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = count === productCheckboxes.length && productCheckboxes.length > 0;
+            selectAllCheckbox.indeterminate = count > 0 && count < productCheckboxes.length;
+        }
+    }
+
+    // Select All checkbox handler
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            productCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = this.checked;
+            }, this);
+            updateSelectionUI();
+        });
+    }
+
+    // Individual checkbox handlers
+    productCheckboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', updateSelectionUI);
+    });
+
+    // Clear selection handler
+    if (clearSelectionBtn) {
+        clearSelectionBtn.addEventListener('click', function() {
+            productCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+            updateSelectionUI();
+        });
+    }
+
+    // Bulk delete handler
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(function(cb) {
+                return cb.value;
+            });
+
+            if (selectedIds.length === 0) {
+                alert('Please select at least one product to delete.');
+                return;
+            }
+
+            // Confirm deletion
+            const confirmMessage = 'Are you sure you want to delete ' + selectedIds.length + ' selected product(s)? This action cannot be undone.';
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            // Disable button and show loading state
+            bulkDeleteBtn.disabled = true;
+            bulkDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+            // Send delete request
+            fetch('{% url "bulk_delete_products" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    product_ids: selectedIds
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    // Reload page to show updated list
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete products.'));
+                    bulkDeleteBtn.disabled = false;
+                    bulkDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting products. Please try again.');
+                bulkDeleteBtn.disabled = false;
+                bulkDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+            });
+        });
+    }
+
+    // Initialize UI
+    updateSelectionUI();
+});
+</script>
+{% endblock %}
+

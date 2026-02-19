@@ -1,0 +1,122 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }} - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="order-detail-page">
+        <div class="breadcrumb">
+            <a href="{% url 'ecomapp:home' %}">Home</a> / 
+            <a href="{% url 'ecomapp:order_list' %}">My Orders</a> / 
+            <span>Order #{{ order.order_number }}</span>
+        </div>
+
+        <div class="order-detail-header">
+            <h1>Order #{{ order.order_number }}</h1>
+            <div class="order-status-info">
+                <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                <span class="payment-status">Payment: {{ order.get_payment_status_display }}</span>
+            </div>
+        </div>
+
+        <div class="order-detail-content">
+            <div class="order-section">
+                <h2>Order Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Order Number:</span>
+                        <span class="value">{{ order.order_number }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Order Date:</span>
+                        <span class="value">{{ order.created_at|date:"F d, Y H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Status:</span>
+                        <span class="value status-{{ order.status }}">{{ order.get_status_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Payment Status:</span>
+                        <span class="value">{{ order.get_payment_status_display }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-section">
+                <h2>Shipping Address</h2>
+                <div class="shipping-address">
+                    <p><strong>{{ order.customer_name }}</strong></p>
+                    <p>{{ order.shipping_address_line_1 }}</p>
+                    {% if order.shipping_address_line_2 %}
+                        <p>{{ order.shipping_address_line_2 }}</p>
+                    {% endif %}
+                    <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}</p>
+                    <p>{{ order.shipping_country }}</p>
+                    <p><strong>Phone:</strong> {{ order.customer_phone }}</p>
+                    <p><strong>Email:</strong> {{ order.customer_email }}</p>
+                </div>
+            </div>
+
+            <div class="order-section">
+                <h2>Order Items</h2>
+                <table class="order-items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>R{{ item.price }}</td>
+                            <td>R{{ item.subtotal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="order-section">
+                <h2>Order Summary</h2>
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>R{{ order.subtotal }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Tax:</span>
+                        <span>R{{ order.tax }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Shipping:</span>
+                        <span>R{{ order.shipping_cost }}</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Total:</span>
+                        <span>R{{ order.total }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if order.notes %}
+            <div class="order-section">
+                <h2>Order Notes</h2>
+                <p>{{ order.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="order-actions">
+            <a href="{% url 'ecomapp:order_list' %}" class="btn btn-secondary">Back to Orders</a>
+            <a href="{% url 'ecomapp:home' %}" class="btn btn-primary">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

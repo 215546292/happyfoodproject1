@@ -1,0 +1,88 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}Super Admin Dashboard - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin: 40px auto; padding: 20px;">
+    <div style="background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; color: #333;">
+                <i class="fas fa-user-shield"></i> Super Admin Dashboard
+            </h1>
+            <a href="{% url 'register_store_admin' %}" class="btn btn-primary" style="text-decoration: none;">
+                <i class="fas fa-user-plus"></i> Register Store Admin
+            </a>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: #555; margin-bottom: 20px;">Registered Store Admins</h2>
+            
+            {% if store_admins %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: #f9f9f9;">
+                    <thead>
+                        <tr style="background: #333; color: white;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Username</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Phone</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Date Registered</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in store_admins %}
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;">{{ admin.user.username }}</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">{{ admin.phone }}</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">{{ admin.created_at|date:"M d, Y" }}</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">
+                                <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                    Active
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;">
+                <i class="fas fa-users" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                <p style="color: #666; font-size: 16px;">No store admins registered yet.</p>
+                <a href="{% url 'register_store_admin' %}" class="btn btn-primary" style="text-decoration: none; margin-top: 20px; display: inline-block;">
+                    Register First Store Admin
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
+            <a href="{% url 'ecomapp:home' %}" style="color: #666; text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+</style>
+{% endblock %}
+

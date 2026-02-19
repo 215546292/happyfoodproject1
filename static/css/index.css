@@ -1,0 +1,132 @@
+/* Base Variables */
+:root {
+    --primary-red: #e94444;
+    --dark-red: #d63030;
+    --lighter-red: #ff6b6b;
+    --lightest-red: #fff0f0;
+    --hover-red: #c52828;
+    --accent-gold: #ffd700;
+    --dark-gold: #ffb700;
+    --background-color: #e4aaaa;
+    --text-dark: #2d3436;
+    --text-light: #636e72;
+    --border-color: #e9ecef;
+}
+
+/* Base Styles */
+body {
+    background: linear-gradient(135deg, var(--background-color), #fcff4d);
+}
+
+.container {
+    padding: 2rem;
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(220, 53, 69, 0.1);
+    margin-top: 20px;
+    border: 2px solid #eee;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    transition: transform 0.2s ease-in-out;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.card-header {
+    background: linear-gradient(45deg, var(--dark-red), var(--primary-red));
+    color: white;
+    border: none;
+    padding: 1rem;
+}
+
+/* Calendar Styles */
+.calendar-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.fc-button-primary {
+    background-color: var(--primary-red) !important;
+    border-color: var(--dark-red) !important;
+}
+
+.fc-event {
+    background-color: var(--primary-red) !important;
+    border-color: var(--dark-red) !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Announcement Styles */
+.announcement-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.announcement-header {
+    background: linear-gradient(45deg, #f3a8a8, #f3a8a8);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.announcement-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Video Section Styles */
+.video-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.video-info {
+    background: white;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+
+    .col-lg-8,
+    .col-lg-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .calendar-container {
+        min-width: 100%;
+        overflow-x: auto;
+    }
+}
+
+/* Utility Classes */
+.bg-gradient-primary {
+    background: linear-gradient(45deg, var(--dark-red), var(--primary-red));
+}
+
+.text-muted {
+    color: var(--text-light) !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}

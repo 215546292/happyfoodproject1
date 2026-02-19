@@ -1,0 +1,492 @@
+{% extends 'ecomapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Auto Spares Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="product-detail-page">
+        <div class="breadcrumb">
+            <a href="{% url 'ecomapp:home' %}">Home</a> / 
+            <a href="{% url 'ecomapp:product_list' %}">Products</a> / 
+            <a href="{% url 'ecomapp:product_list_by_category' product.category.slug %}">{{ product.category.name }}</a> / 
+            <span>{{ product.name }}</span>
+        </div>
+
+        <div class="product-detail">
+            <!-- Product Images - Takealot Style Gallery -->
+            <div class="product-images-gallery">
+                {% with all_images=product.get_all_image_urls %}
+                    {% if all_images %}
+                        <div class="gallery-main-container">
+                            <div class="main-image-wrapper" id="mainImageWrapper">
+                                {% if all_images|length > 1 %}
+                                    <button class="gallery-nav-btn prev-btn" id="prevBtn" onclick="changeImageByIndex(-1)">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="gallery-nav-btn next-btn" id="nextBtn" onclick="changeImageByIndex(1)">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                {% endif %}
+                                <div class="main-image-container" id="mainImageContainer">
+                                    <img src="{{ all_images.0 }}" alt="{{ product.name }}" id="mainImage" class="main-product-image">
+                                </div>
+                                <div class="image-counter">
+                                    <span id="currentImageIndex">1</span> / <span id="totalImages">{{ all_images|length }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if all_images|length > 1 %}
+                                <div class="thumbnail-container">
+                                    <div class="thumbnail-scroll-wrapper" id="thumbnailScroll">
+                                        {% for image_url in all_images %}
+                                            <div class="thumbnail-item {% if forloop.first %}active{% endif %}" onclick="changeImageByIndex({{ forloop.counter0 }})">
+                                                <img src="{{ image_url }}" alt="{{ product.name }} - Image {{ forloop.counter }}" data-index="{{ forloop.counter0 }}">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if all_images|length > 4 %}
+                                        <button class="thumbnail-scroll-btn scroll-left" onclick="scrollThumbnails('left')">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button class="thumbnail-scroll-btn scroll-right" onclick="scrollThumbnails('right')">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="product-images">
+                            <div class="main-image">
+                                <div class="product-placeholder large">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info-detail">
+                <h1>{{ product.name }}</h1>
+                <div class="product-meta">
+                    <span class="condition">{{ product.get_condition_display }}</span>
+                </div>
+
+                <div class="product-price-detail">
+                    <span class="price">R{{ product.price }}</span>
+                    {% if product.compare_at_price %}
+                        <span class="compare-price">R{{ product.compare_at_price }}</span>
+                        <span class="discount">Save {{ product.discount_percentage }}%</span>
+                    {% endif %}
+                </div>
+
+                {% if product.make or product.model %}
+                <div class="vehicle-compatibility">
+                    <h3>Vehicle Compatibility</h3>
+                    <ul>
+                        {% if product.make %}<li><strong>Make:</strong> {{ product.make }}</li>{% endif %}
+                        {% if product.model %}<li><strong>Model:</strong> {{ product.model }}</li>{% endif %}
+                        {% if product.year_from or product.year_to %}
+                            <li><strong>Year:</strong> 
+                                {% if product.year_from %}{{ product.year_from }}{% endif %}
+                                {% if product.year_from and product.year_to %} - {% endif %}
+                                {% if product.year_to %}{{ product.year_to }}{% endif %}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="stock-info">
+                    {% if product.in_stock %}
+                        <span class="in-stock"><i class="fas fa-check-circle"></i> In Stock ({{ product.stock_quantity }} available)</span>
+                    {% else %}
+                        <span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-description">
+                    <h3>Description</h3>
+                    <p>{{ product.description|linebreaks }}</p>
+                </div>
+
+                <!-- Add to Cart Form -->
+                {% if product.in_stock %}
+                <form method="post" action="{% url 'ecomapp:add_to_cart' product.id %}" class="add-to-cart-form" id="addToCartForm">
+                    {% csrf_token %}
+                    <div class="quantity-selector">
+                        <label for="quantity-input">Quantity:</label>
+                        <input 
+                            type="number" 
+                            id="quantity-input"
+                            name="quantity" 
+                            value="1" 
+                            min="1" 
+                            max="{{ product.stock_quantity }}" 
+                            required
+                            aria-label="Product quantity"
+                        >
+                        <span class="stock-info-text">({{ product.stock_quantity }} available)</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large" id="addToCartBtn">
+                        <i class="fas fa-shopping-cart"></i> <span id="btnText">Add to Cart</span>
+                    </button>
+                    <div class="form-error" id="formError" style="display: none; color: var(--danger-color); margin-top: 0.5rem;"></div>
+                </form>
+                {% else %}
+                <button class="btn btn-disabled" disabled>Out of Stock</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Related Products - Takealot Style -->
+        {% if related_products %}
+        <section class="related-products-section">
+            <div class="related-products-header">
+                <h2 class="section-title">Related Products</h2>
+                <p class="section-subtitle">You might also like</p>
+            </div>
+            <div class="related-products-container">
+                <button class="carousel-nav-btn carousel-prev" id="relatedProductsPrev" aria-label="Previous products">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="related-products-carousel" id="relatedProductsCarousel">
+                    <div class="related-products-track">
+                        {% for related_product in related_products %}
+                        <div class="related-product-card">
+                            <a href="{% url 'ecomapp:product_detail' related_product.slug %}" class="related-product-link">
+                                <div class="related-product-image-wrapper">
+                                    {% if related_product.get_primary_image %}
+                                        <img src="{{ related_product.get_primary_image }}" alt="{{ related_product.name }}" class="related-product-image" loading="lazy">
+                                    {% else %}
+                                        <div class="related-product-placeholder">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    {% endif %}
+                                    {% if related_product.is_featured %}
+                                        <span class="featured-badge">Featured</span>
+                                    {% endif %}
+                                    {% if related_product.compare_at_price and related_product.compare_at_price > related_product.price %}
+                                        <span class="discount-badge">Save {{ related_product.discount_percentage }}%</span>
+                                    {% endif %}
+                                </div>
+                                <div class="related-product-info">
+                                    <h3 class="related-product-name" title="{{ related_product.name }}">{{ related_product.name|truncatewords:8 }}</h3>
+                                    {% if related_product.make %}
+                                        <p class="related-product-meta">{{ related_product.make }}{% if related_product.model %} {{ related_product.model }}{% endif %}</p>
+                                    {% endif %}
+                                    <div class="related-product-price">
+                                        <span class="related-price-main">R{{ related_product.price }}</span>
+                                        {% if related_product.compare_at_price and related_product.compare_at_price > related_product.price %}
+                                            <span class="related-price-compare">R{{ related_product.compare_at_price }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="related-product-actions">
+                                {% if related_product.in_stock %}
+                                    <form method="post" action="{% url 'ecomapp:add_to_cart' related_product.id %}" class="add-to-cart-form-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="related-out-of-stock">Out of Stock</span>
+                                    <button class="btn btn-disabled btn-sm" disabled>
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button class="carousel-nav-btn carousel-next" id="relatedProductsNext" aria-label="Next products">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Product Image Gallery - Simple Gallery without Zoom
+let currentImageIndex = 0;
+let allImages = [];
+
+// Initialize gallery
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all images from thumbnails or from data attributes
+    const thumbnailImages = document.querySelectorAll('.thumbnail-item img');
+    if (thumbnailImages.length > 0) {
+        allImages = Array.from(thumbnailImages).map(img => img.src);
+    } else {
+        // Fallback: get from main image if no thumbnails
+        const mainImage = document.getElementById('mainImage');
+        if (mainImage && mainImage.src) {
+            allImages = [mainImage.src];
+        }
+    }
+    
+    if (allImages.length > 0) {
+        // Initialize keyboard navigation
+        document.addEventListener('keydown', handleKeyboardNavigation);
+        
+        // Update image counter
+        updateImageCounter();
+        
+        // Handle image loading errors
+        const mainImage = document.getElementById('mainImage');
+        if (mainImage) {
+            mainImage.addEventListener('error', function() {
+                console.error('Failed to load product image');
+                this.src = '/static/img/default.png';
+            });
+        }
+    }
+});
+
+function changeImageByIndex(index) {
+    if (allImages.length === 0) return;
+    
+    if (typeof index === 'number' && index >= 0) {
+        // Direct index change
+        currentImageIndex = Math.min(index, allImages.length - 1);
+    } else {
+        // Relative change (prev/next)
+        currentImageIndex += index;
+        if (currentImageIndex < 0) {
+            currentImageIndex = allImages.length - 1;
+        } else if (currentImageIndex >= allImages.length) {
+            currentImageIndex = 0;
+        }
+    }
+    
+    // Update main image
+    const mainImage = document.getElementById('mainImage');
+    if (mainImage) {
+        mainImage.src = allImages[currentImageIndex];
+    }
+    
+    // Update thumbnails (only if they exist)
+    if (allImages.length > 1) {
+        updateThumbnails();
+    }
+    
+    // Update counter
+    updateImageCounter();
+}
+
+function updateThumbnails() {
+    const thumbnails = document.querySelectorAll('.thumbnail-item');
+    thumbnails.forEach((thumb, index) => {
+        thumb.classList.toggle('active', index === currentImageIndex);
+    });
+    
+    // Scroll active thumbnail into view
+    const activeThumb = document.querySelector('.thumbnail-item.active');
+    if (activeThumb) {
+        activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
+
+function updateImageCounter() {
+    const currentIndexEl = document.getElementById('currentImageIndex');
+    const totalImagesEl = document.getElementById('totalImages');
+    if (currentIndexEl) currentIndexEl.textContent = currentImageIndex + 1;
+    if (totalImagesEl) totalImagesEl.textContent = allImages.length;
+}
+
+function scrollThumbnails(direction) {
+    const thumbnailScroll = document.getElementById('thumbnailScroll');
+    if (!thumbnailScroll) return;
+    
+    const scrollAmount = 150;
+    const currentScroll = thumbnailScroll.scrollLeft;
+    const newScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+    
+    thumbnailScroll.scrollTo({
+        left: newScroll,
+        behavior: 'smooth'
+    });
+}
+
+function handleKeyboardNavigation(e) {
+    if (allImages.length <= 1) return;
+    
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        changeImageByIndex(-1);
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        changeImageByIndex(1);
+    }
+}
+
+// Enhanced form validation and submission
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartForm = document.getElementById('addToCartForm');
+    const quantityInput = document.getElementById('quantity-input');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const btnText = document.getElementById('btnText');
+    const formError = document.getElementById('formError');
+    
+    if (addToCartForm && quantityInput) {
+        // Real-time quantity validation
+        quantityInput.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            const max = parseInt(this.max);
+            const min = parseInt(this.min);
+            
+            if (isNaN(value) || value < min) {
+                this.value = min;
+            } else if (value > max) {
+                this.value = max;
+                showError(`Maximum quantity is ${max}`);
+            } else {
+                hideError();
+            }
+        });
+        
+        // Form submission with enhanced validation
+        addToCartForm.addEventListener('submit', function(e) {
+            const quantity = parseInt(quantityInput.value);
+            const maxQuantity = parseInt(quantityInput.max);
+            
+            // Validate quantity
+            if (isNaN(quantity) || quantity < 1) {
+                e.preventDefault();
+                showError('Please enter a valid quantity.');
+                return false;
+            }
+            
+            if (quantity > maxQuantity) {
+                e.preventDefault();
+                showError(`Only ${maxQuantity} item(s) available in stock.`);
+                return false;
+            }
+            
+            // Disable button and show loading state
+            if (addToCartBtn) {
+                addToCartBtn.disabled = true;
+                if (btnText) {
+                    btnText.textContent = 'Adding...';
+                }
+            }
+            
+            // Re-enable button after 3 seconds in case of error
+            setTimeout(function() {
+                if (addToCartBtn) {
+                    addToCartBtn.disabled = false;
+                    if (btnText) {
+                        btnText.textContent = 'Add to Cart';
+                    }
+                }
+            }, 3000);
+        });
+    }
+    
+    function showError(message) {
+        if (formError) {
+            formError.textContent = message;
+            formError.style.display = 'block';
+        }
+    }
+    
+    function hideError() {
+        if (formError) {
+            formError.style.display = 'none';
+            formError.textContent = '';
+        }
+    }
+});
+
+// Related Products Carousel
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('relatedProductsCarousel');
+    const track = carousel ? carousel.querySelector('.related-products-track') : null;
+    const prevBtn = document.getElementById('relatedProductsPrev');
+    const nextBtn = document.getElementById('relatedProductsNext');
+    
+    if (!carousel || !track || !prevBtn || !nextBtn) return;
+    
+    const cards = track.querySelectorAll('.related-product-card');
+    if (cards.length === 0) return;
+    
+    const cardWidth = cards[0].offsetWidth;
+    const gap = 20; // Gap between cards
+    const cardsPerView = Math.floor(carousel.offsetWidth / (cardWidth + gap));
+    const maxScroll = track.scrollWidth - carousel.offsetWidth;
+    
+    let currentPosition = 0;
+    
+    function updateButtons() {
+        prevBtn.style.display = currentPosition <= 0 ? 'none' : 'flex';
+        nextBtn.style.display = currentPosition >= maxScroll - 10 ? 'none' : 'flex';
+    }
+    
+    function scrollCarousel(direction) {
+        const scrollAmount = (cardWidth + gap) * cardsPerView;
+        currentPosition += direction === 'next' ? scrollAmount : -scrollAmount;
+        currentPosition = Math.max(0, Math.min(currentPosition, maxScroll));
+        
+        track.style.transform = `translateX(-${currentPosition}px)`;
+        updateButtons();
+    }
+    
+    prevBtn.addEventListener('click', () => scrollCarousel('prev'));
+    nextBtn.addEventListener('click', () => scrollCarousel('next'));
+    
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            const newCardWidth = cards[0].offsetWidth;
+            const newCardsPerView = Math.floor(carousel.offsetWidth / (newCardWidth + gap));
+            const newMaxScroll = track.scrollWidth - carousel.offsetWidth;
+            maxScroll = newMaxScroll;
+            updateButtons();
+        }, 250);
+    });
+    
+    // Initialize button visibility
+    updateButtons();
+    
+    // Touch/swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    track.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    track.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0 && currentPosition < maxScroll) {
+                scrollCarousel('next');
+            } else if (diff < 0 && currentPosition > 0) {
+                scrollCarousel('prev');
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+
